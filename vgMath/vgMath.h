@@ -560,7 +560,7 @@ TEMPLATE_TYPENAME_T inline const MAT4_T perspective(T fovy, T a, T n, T f)
 TEMPLATE_TYPENAME_T inline const MAT4_T perspectiveFov(T fovy, T w, T h, T n, T f) { return perspective(fovy, w/h, n, f); }
 // frustrum
 //////////////////////////
-TEMPLATE_TYPENAME_T inline const MAT4_T frustrum(T l, T r, T b, T t, T n, T f)
+TEMPLATE_TYPENAME_T inline const MAT4_T frustum(T l, T r, T b, T t, T n, T f)
 {
 #ifdef VGM_USES_LEFT_HAND_AXES
     const T v = T(1),  f_n =  (f+n)/(f-n);

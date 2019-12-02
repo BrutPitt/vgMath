@@ -1,6 +1,6 @@
 # vgMath &nbsp;v2.1
 **vgMath** is a header only, compact, optimized, class math library, it contains classes to manipulate **vec**tors (with 2/3/4 components), **quat**ernions, square **mat**ricies (3x3 and 4x4).
- It contains also 4 helper functions to define Model/View/Proj matrix: **perspective**, **frustrum**, **lookAt**, **ortho**, both LeftHanded and RightHanded
+ It contains also 4 helper functions to define Model/View/Proj matrix: **perspective**, **frustum**, **lookAt**, **ortho**, both LeftHanded and RightHanded
 
 Consist only of the file `vgMath.h`, plus a external `vgConfig.h` used to permit to configure it, indeed a particularity of **vgMath** is that it's configurable: it can switch from fixed type (float) for small projects or limited resources, to template classes with all types (**float** / **double** / **int** / **uint**) simply via `#define`
 It uses GLSL (alias) name convention, but if is preferred, is possible to add also HLSL names type. (always via `#define`)
@@ -19,7 +19,7 @@ Other peculiarity is that it's a "subset" of [**glm** mathematics library](https
 The file `vgConfig.h` allows to user to configure internal math functionality. In particular is possible select between:
  - static **float** classes (*Default*) / template classes
  - internal **vgMath** tool (*Default*) / **glm** mathematics library (it only affects [**virtualGizmo3D**](https://github.com/BrutPitt/virtualGizmo3D) / [**imGuIZMO.quat**](https://github.com/BrutPitt/imGuIZMO.quat) on which library to use internally: **vgMath** or **glm** )
- - **Right** (*Default*) / **Left** handed coordinate system (*lookAt, perspective, ortho, frustrum - functions*)
+ - **Right** (*Default*) / **Left** handed coordinate system (*lookAt, perspective, ortho, frustum - functions*)
  - Add additional HLSL types name convention
  - **enable** (*Default*) / **disable** the automatic entry of `using namespace vgm;` at end of `vgMath.h`
 
