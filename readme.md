@@ -1,4 +1,4 @@
-# vgMath &nbsp;v2.1
+# vgMath &nbsp;v3.0
 **vgMath** is a header only, compact, optimized, class math library, it contains classes to manipulate **vec**tors (with 2/3/4 components), **quat**ernions, square **mat**ricies (3x3 and 4x4).
  It contains also 4 helper functions to define Model/View/Proj matrix: **perspective**, **frustum**, **lookAt**, **ortho**, both LeftHanded and RightHanded
 
