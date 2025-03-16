@@ -12,7 +12,7 @@
 //------------------------------------------------------------------------------
 #pragma once
 
-#include "vgConfig.h"
+#include "vgMath_config.h"
 
 #ifdef VGM_USES_DOUBLE_PRECISION
     #define VG_T_TYPE double
@@ -20,35 +20,6 @@
 #else
     #define VG_T_TYPE float
 #endif
-
-#ifdef VGIZMO_USES_GLM
-    #ifndef VGM_USES_TEMPLATE
-        #define VGM_USES_TEMPLATE    // glm uses template ==> vGizmo needs to know
-    #endif
-
-    #define VGM_NAMESPACE glm
-
-    #include <glm/glm.hpp>
-    #include <glm/gtx/vector_angle.hpp>
-    #include <glm/gtx/exterior_product.hpp>
-    #include <glm/gtc/type_ptr.hpp>
-    #include <glm/gtc/quaternion.hpp>
-    #include <glm/gtc/matrix_transform.hpp>
-
-    using tVec2 = glm::tvec2<VG_T_TYPE>;
-    using tVec3 = glm::tvec3<VG_T_TYPE>;
-    using tVec4 = glm::tvec4<VG_T_TYPE>;
-    using tQuat = glm::tquat<VG_T_TYPE>;
-    using tMat3 = glm::tmat3x3<VG_T_TYPE>;
-    using tMat4 = glm::tmat4x4<VG_T_TYPE>;
-
-    #define T_PI glm::pi<VG_T_TYPE>()
-    #define T_INV_PI glm::one_over_pi<VG_T_TYPE>()
-
-    #define VGIZMO_BASE_CLASS virtualGizmoBaseClass<T>
-    #define TEMPLATE_TYPENAME_T  template<typename T>
-
-#else // use vGizmoMath
 
     #include <cmath>
     #include <cstdint>
@@ -397,9 +368,9 @@ TEMPLATE_TYPENAME_T inline MAT3_T::Mat3(QUAT_T const& q) {
     *this = { T(1) - T(2) * (yy + zz),         T(2) * (xy + wz),         T(2) * (xz - wy),
                      T(2) * (xy - wz),  T(1) - T(2) * (xx + zz),         T(2) * (yz + wx),
                      T(2) * (xz + wy),         T(2) * (yz - wx),  T(1) - T(2) * (xx + yy) }; }
-TEMPLATE_TYPENAME_T inline MAT4_T::Mat4(QUAT_T const& q)     {  *this = Mat4(Mat3(q)); }
-TEMPLATE_TYPENAME_T inline MAT3_T mat3_cast(QUAT_T const& q) { return Mat3(q); }
-TEMPLATE_TYPENAME_T inline MAT4_T mat4_cast(QUAT_T const& q) { return Mat3(q); }
+TEMPLATE_TYPENAME_T inline MAT4_T::Mat4(QUAT_T const& q)     {  *this = MAT4_T(MAT3_T(q)); }
+TEMPLATE_TYPENAME_T inline MAT3_T mat3_cast(QUAT_T const& q) { return MAT3_T(q); }
+TEMPLATE_TYPENAME_T inline MAT4_T mat4_cast(QUAT_T const& q) { return MAT3_T(q); }
 TEMPLATE_TYPENAME_T inline VEC3_T getTranslationVec(const MAT4_T& m) { return { m.v[3] }; }
 
 
@@ -407,7 +378,7 @@ inline float uintBitsToFloat(uint32_t const v) { return *((float *)(&v)); }
 inline uint32_t floatBitsToUint(float const v) { return *((uint32_t *)(&v)); }
 // dot
 //////////////////////////
-TEMPLATE_TYPENAME_T inline T dot(const VEC2_T& v0, const VEC2_T& v1) { return v0.x * v1.x + v0.y * v1.y; }
+TEMPLATE_TYPENAME_T inline T dot(const  VEC2_T& v0, const VEC2_T& v1) { return v0.x * v1.x + v0.y * v1.y; }
 TEMPLATE_TYPENAME_T inline T dot(const VEC3_T& v0, const VEC3_T& v1) { return v0.x * v1.x + v0.y * v1.y + v0.z * v1.z; }
 TEMPLATE_TYPENAME_T inline T dot(const VEC4_T& v0, const VEC4_T& v1) { return v0.x * v1.x + v0.y * v1.y + v0.z * v1.z + v0.w * v1.w; }
 TEMPLATE_TYPENAME_T inline T dot(const QUAT_T& q0, const QUAT_T& q1) { return q0.x * q1.x + q0.y * q1.y + q0.z * q1.z + q0.w * q1.w; }
@@ -539,13 +510,27 @@ TEMPLATE_TYPENAME_T inline VEC3_T operator*(const QUAT_T& q, const VEC3_T& v) {
     const VEC3_T qV(q.x, q.y, q.z), uv(cross(qV, v));
     return v + ((uv * q.w) + cross(qV, uv)) * T(2); }
 TEMPLATE_TYPENAME_T inline  VEC3_T operator*(const VEC3_T& v, const QUAT_T& q) {  return inverse(q) * v; }
-// translate / scale
+// translate / scale / rotate
 //////////////////////////
 TEMPLATE_TYPENAME_T inline MAT4_T translate(MAT4_T const& m, VEC3_T const& v) {
     MAT4_T r(m); r[3] = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3]; 
     return r; }
 TEMPLATE_TYPENAME_T inline MAT4_T scale(MAT4_T const& m, VEC3_T const& v) {
     return MAT4_T(m[0] * v[0], m[1] * v[1], m[2] * v[2], m[3]); }
+
+TEMPLATE_TYPENAME_T inline MAT4_T rotate(MAT4_T const& m, const T a, VEC3_T const& v) {
+    T const c = cos(a), s = sin(a);
+    VEC3_T axis { normalize(v) }, t { (T(1) - c) * axis };
+
+    MAT3_T rot = { { c + t.x * axis.x,          t.x * axis.y + s * axis.z, t.x * axis.z - s * axis.y },
+                   { t.y * axis.x - s * axis.z, c + t.y * axis.y,          t.y * axis.z + s * axis.x },
+                   { t.z * axis.x + s * axis.y, t.z * axis.y - s * axis.x, c + t.z * axis.z          } };
+
+    return { { m.v[0] * rot.m00 + m.v[1] * rot.m01 + m.v[2] * rot.m02 },
+             { m.v[0] * rot.m10 + m.v[1] * rot.m11 + m.v[2] * rot.m12 },
+             { m.v[0] * rot.m20 + m.v[1] * rot.m21 + m.v[2] * rot.m22 },
+             { m.v[3]                                                 } };
+}
 // quat angle/axis
 //////////////////////////
 TEMPLATE_TYPENAME_T inline QUAT_T angleAxis(T const &a, VEC3_T const &v) { return QUAT_T(cos(a * T(0.5)), v * sin(a * T(0.5))); }
@@ -585,7 +570,7 @@ TEMPLATE_TYPENAME_T inline MAT4_T lookAtLH(const VEC3_T& pov, const VEC3_T& tgt,
 
 TEMPLATE_TYPENAME_T inline MAT4_T lookAtRH(const VEC3_T& pov, const VEC3_T& tgt, const VEC3_T& up)
 {
-    VEC3_T k = normalize(tgt - pov), i = normalize(cross(k, up)), j = cross(i, k);   k = -k;
+    VEC3_T k = normalize(pov - tgt), i = normalize(cross(up, k)), j = cross(k, i);
     return {     i.x,          j.x,          k.x,     T(0),
                  i.y,          j.y,          k.y,     T(0),
                  i.z,          j.z,          k.z,     T(0),
@@ -793,7 +778,6 @@ TEMPLATE_TYPENAME_T inline MAT4_T frustum     (cT l, cT r, cT b, cT t, cT n, cT 
     #undef MAT4_PRECISION
 
 
-#endif // use vGizmoMath
 #if !defined(VGM_DISABLE_AUTO_NAMESPACE) || defined(VGIZMO_H_FILE)
     using namespace VGM_NAMESPACE;
 #endif
